@@ -1,0 +1,28 @@
+		TYPE	
+A PROJECT has:			
+	a name	text	a project has only one name
+	SAMPLE	text	one project has 1 or more samples
+a SAMPLE has a:			
+	sequencing_type	text	"one sample can have 1 or more sequencing types (16S, WGS)"
+	project_sample_number	"numeric, sequential within a project"	one sample had only one project sample number
+	project_sample_ID	text	one sample may have more than one project sample ID
+	Additional_ID_info	text	one sample may have more than one additional info entry
+	sequencing_barcode	numeric	one sample had only one barcode
+	.bam filename	text	one sample has only one .bam filename which should be a concatenation of the barcode and sample text (IonXpress_0xx_SAMPLE.bam)
+			
+A .bam file has a:			
+	BAM_file_QC command	text	a bam file had only one QC command
+	total_reads(samtools_view_-c)	numeric	a bam file had only one total read count
+	unmapped_reads(samtools_view_-c_-f4)	numeric	a bam file had only one unmapped read count
+	mapped_reads(samtools_view_-c_-F4)	numeric	a bam file had only one mapped read count
+	sum of mapped and unmapped reads	numeric	a bam file had only one sum of the unmpapped and mapped reads
+	sanity check read count totals	"TRUE/FALSE, checks that sum of mapped and unmapped equal total"	a bam file had only one sanity check value (TRUE/FALSE)
+	Include_in_paper?	Yes/No	a sample is either included in a paper or not
+	paper to be included in	text	"if a sample us included in a paper, it can be included in more than one"
+	Culture_result	text	one sample has one culture result
+	other_results	text	"one sample may have more than one other results (Vitek identification, VITEK MS identification, ….)"
+	analyses	"flat file, uploads of centriduge reports, images, and tables for publication"	one bam file may have more than one analyses files associated with it
+a .bam file came from a:			
+	Run_on_Sequencer	text	many bam files have the same sequencing run
+A run on a sequencer has a:			
+	sequencing_report	.pdf file	a sequencing run has only 1 .pdf report
