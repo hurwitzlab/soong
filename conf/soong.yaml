@@ -1,0 +1,10 @@
+db:
+  name: "soong"
+  user: "soong"
+  password: "Um06P2StWnf1!"
+  driver: "mysql"
+
+mongo:
+  host: "lipothrix.hpc.arizona.edu"
+  port: "27017"
+  dbname: "imicrobe"

@@ -1,5 +1,9 @@
+DB_NAME = soong
+
 schema:
-	mysql soong < schema.sql
+	mysql $(DB_NAME) < schema.sql
 
 er:
-	sqlt-graph --color -f MySQL -o schema.png schema.sql
+	mysqldump --no-data $(DB_NAME) > /tmp/$(DB_NAME)
+	sqlt-graph --color -f MySQL -o schema.png /tmp/$(DB_NAME)
+	rm /tmp/$(DB_NAME)

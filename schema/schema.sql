@@ -35,6 +35,7 @@ drop table if exists seq_run;
 create table seq_run (
   seq_run_id int unsigned not null auto_increment primary key,
   sample_id int unsigned not null,
+  run_on_sequencer varchar(255),
   report varchar(255),
   key (sample_id),
   foreign key (sample_id) references sample (sample_id)
