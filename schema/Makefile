@@ -2,6 +2,7 @@ DB_NAME = soong
 
 schema:
 	mysql $(DB_NAME) < schema.sql
+	mysql $(DB_NAME) < default_data.sql
 
 er:
 	mysqldump --no-data $(DB_NAME) > /tmp/$(DB_NAME)
