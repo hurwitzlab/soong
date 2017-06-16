@@ -43,11 +43,12 @@ __PACKAGE__->table("bam_file");
 =head2 publication_id
 
   data_type: 'integer'
+  default_value: 1
   extra: {unsigned => 1}
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 file_name
+=head2 filename
 
   data_type: 'varchar'
   is_nullable: 0
@@ -71,6 +72,11 @@ __PACKAGE__->table("bam_file");
   is_nullable: 1
 
 =head2 culture_result
+
+  data_type: 'text'
+  is_nullable: 1
+
+=head2 short_culture_result
 
   data_type: 'text'
   is_nullable: 1
@@ -105,11 +111,12 @@ __PACKAGE__->add_columns(
   "publication_id",
   {
     data_type => "integer",
+    default_value => 1,
     extra => { unsigned => 1 },
     is_foreign_key => 1,
     is_nullable => 0,
   },
-  "file_name",
+  "filename",
   { data_type => "varchar", is_nullable => 0, size => 255 },
   "qc_command",
   { data_type => "text", is_nullable => 1 },
@@ -118,6 +125,8 @@ __PACKAGE__->add_columns(
   "num_mapped_reads",
   { data_type => "integer", extra => { unsigned => 1 }, is_nullable => 1 },
   "culture_result",
+  { data_type => "text", is_nullable => 1 },
+  "short_culture_result",
   { data_type => "text", is_nullable => 1 },
   "other_results",
   { data_type => "text", is_nullable => 1 },
@@ -145,13 +154,13 @@ __PACKAGE__->set_primary_key("bam_file_id");
 
 =item * L</seq_run_id>
 
-=item * L</file_name>
+=item * L</filename>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint("seq_run_id", ["seq_run_id", "file_name"]);
+__PACKAGE__->add_unique_constraint("seq_run_id", ["seq_run_id", "filename"]);
 
 =head1 RELATIONS
 
@@ -167,7 +176,7 @@ __PACKAGE__->belongs_to(
   "publication",
   "Soong::Schema::Result::Publication",
   { publication_id => "publication_id" },
-  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "RESTRICT" },
 );
 
 =head2 seq_run
@@ -182,12 +191,12 @@ __PACKAGE__->belongs_to(
   "seq_run",
   "Soong::Schema::Result::SeqRun",
   { seq_run_id => "seq_run_id" },
-  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "RESTRICT" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2017-06-12 14:50:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:nJpI1NT/MfPVmpYqmmKKTg
+# Created by DBIx::Class::Schema::Loader v0.07042 @ 2017-06-16 10:31:25
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:QuGIcK0HCRS0OTD3/ngtag
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

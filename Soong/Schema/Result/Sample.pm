@@ -40,7 +40,7 @@ __PACKAGE__->table("sample");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 seq_type_id
+=head2 patient_id
 
   data_type: 'integer'
   default_value: 1
@@ -48,7 +48,7 @@ __PACKAGE__->table("sample");
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 sample_name
+=head2 sample_acc
 
   data_type: 'varchar'
   is_nullable: 0
@@ -56,15 +56,15 @@ __PACKAGE__->table("sample");
 
 =head2 sample_num
 
-  data_type: 'varchar'
+  data_type: 'integer'
+  extra: {unsigned => 1}
   is_nullable: 1
-  size: 100
 
-=head2 barcode
+=head2 sample_collection_date
 
-  data_type: 'varchar'
+  data_type: 'date'
+  datetime_undef_if_invalid: 1
   is_nullable: 1
-  size: 100
 
 =cut
 
@@ -83,7 +83,7 @@ __PACKAGE__->add_columns(
     is_foreign_key => 1,
     is_nullable => 0,
   },
-  "seq_type_id",
+  "patient_id",
   {
     data_type => "integer",
     default_value => 1,
@@ -91,12 +91,12 @@ __PACKAGE__->add_columns(
     is_foreign_key => 1,
     is_nullable => 0,
   },
-  "sample_name",
+  "sample_acc",
   { data_type => "varchar", is_nullable => 0, size => 100 },
   "sample_num",
-  { data_type => "varchar", is_nullable => 1, size => 100 },
-  "barcode",
-  { data_type => "varchar", is_nullable => 1, size => 100 },
+  { data_type => "integer", extra => { unsigned => 1 }, is_nullable => 1 },
+  "sample_collection_date",
+  { data_type => "date", datetime_undef_if_invalid => 1, is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -119,15 +119,45 @@ __PACKAGE__->set_primary_key("sample_id");
 
 =item * L</project_id>
 
-=item * L</sample_name>
+=item * L</sample_acc>
 
 =back
 
 =cut
 
-__PACKAGE__->add_unique_constraint("project_id", ["project_id", "sample_name"]);
+__PACKAGE__->add_unique_constraint("project_id", ["project_id", "sample_acc"]);
 
 =head1 RELATIONS
+
+=head2 libraries
+
+Type: has_many
+
+Related object: L<Soong::Schema::Result::Library>
+
+=cut
+
+__PACKAGE__->has_many(
+  "libraries",
+  "Soong::Schema::Result::Library",
+  { "foreign.sample_id" => "self.sample_id" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+=head2 patient
+
+Type: belongs_to
+
+Related object: L<Soong::Schema::Result::Patient>
+
+=cut
+
+__PACKAGE__->belongs_to(
+  "patient",
+  "Soong::Schema::Result::Patient",
+  { patient_id => "patient_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "RESTRICT" },
+);
 
 =head2 project
 
@@ -141,44 +171,92 @@ __PACKAGE__->belongs_to(
   "project",
   "Soong::Schema::Result::Project",
   { project_id => "project_id" },
-  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "RESTRICT" },
 );
 
-=head2 seq_runs
+=head2 sample_attrs
 
 Type: has_many
 
-Related object: L<Soong::Schema::Result::SeqRun>
+Related object: L<Soong::Schema::Result::SampleAttr>
 
 =cut
 
 __PACKAGE__->has_many(
-  "seq_runs",
-  "Soong::Schema::Result::SeqRun",
+  "sample_attrs",
+  "Soong::Schema::Result::SampleAttr",
   { "foreign.sample_id" => "self.sample_id" },
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 seq_type
 
-Type: belongs_to
+# Created by DBIx::Class::Schema::Loader v0.07042 @ 2017-06-15 11:29:44
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:cRQglyBPQkYSpNWKXRw2Hw
 
-Related object: L<Soong::Schema::Result::SeqType>
+# --------------------------------------------------
+sub aliases {
+    my $self = shift;
+    my $dbh  = $self->result_source->storage->dbh;
+    return @{ $dbh->selectcol_arrayref(
+        q[
+            select a.value
+            from   sample_attr a, sample_attr_type t
+            where  a.sample_id=?
+            and    a.sample_attr_type_id=t.sample_attr_type_id
+            and    t.type=?
+        ],
+        {},
+        ($self->id, 'sample_alias')
+    )};
+}
 
-=cut
+# --------------------------------------------------
+sub bam_file_ids {
+    my $self = shift;
+    my $dbh  = $self->result_source->storage->dbh;
+    return @{ $dbh->selectcol_arrayref(
+        q[
+            select b.bam_file_id
+            from   bam_file b, seq_run s, library l
+            where  l.sample_id=?
+            and    l.library_id=s.library_id
+            and    s.seq_run_id=b.seq_run_id
+        ],
+        {},
+        ($self->id)
+    )};
+}
 
-__PACKAGE__->belongs_to(
-  "seq_type",
-  "Soong::Schema::Result::SeqType",
-  { seq_type_id => "seq_type_id" },
-  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
-);
+# --------------------------------------------------
+sub bam_files {
+    my $self   = shift;
+    my $schema = $self->result_source->storage->schema;
+    return map { $schema->resultset('BamFile')->find($_) } $self->bam_file_ids;
+}
 
+# --------------------------------------------------
+sub seq_run_ids {
+    my $self = shift;
+    my $dbh  = $self->result_source->storage->dbh;
+    return @{ $dbh->selectcol_arrayref(
+        q[
+            select s.seq_run_id
+            from   seq_run s, library l
+            where  l.sample_id=?
+            and    l.library_id=s.library_id
+        ],
+        {},
+        ($self->id)
+    )};
+}
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2017-06-12 14:50:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:bwrQn+nB/Uo26CPEL9a59A
+# --------------------------------------------------
+sub seq_runs {
+    my $self   = shift;
+    my $schema = $self->result_source->storage->schema;
+    return map { $schema->resultset('SeqRun')->find($_) } $self->seq_run_ids;
+}
 
-
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 __PACKAGE__->meta->make_immutable;
+
 1;

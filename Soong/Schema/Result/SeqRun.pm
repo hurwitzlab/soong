@@ -33,20 +33,20 @@ __PACKAGE__->table("seq_run");
   is_auto_increment: 1
   is_nullable: 0
 
-=head2 sample_id
+=head2 library_id
 
   data_type: 'integer'
   extra: {unsigned => 1}
   is_foreign_key: 1
   is_nullable: 0
 
-=head2 run_on_sequencer
+=head2 sequencing_report
 
   data_type: 'varchar'
   is_nullable: 1
   size: 255
 
-=head2 report
+=head2 run_on_sequencer
 
   data_type: 'varchar'
   is_nullable: 1
@@ -62,16 +62,16 @@ __PACKAGE__->add_columns(
     is_auto_increment => 1,
     is_nullable => 0,
   },
-  "sample_id",
+  "library_id",
   {
     data_type => "integer",
     extra => { unsigned => 1 },
     is_foreign_key => 1,
     is_nullable => 0,
   },
-  "run_on_sequencer",
+  "sequencing_report",
   { data_type => "varchar", is_nullable => 1, size => 255 },
-  "report",
+  "run_on_sequencer",
   { data_type => "varchar", is_nullable => 1, size => 255 },
 );
 
@@ -86,6 +86,22 @@ __PACKAGE__->add_columns(
 =cut
 
 __PACKAGE__->set_primary_key("seq_run_id");
+
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<library_report>
+
+=over 4
+
+=item * L</library_id>
+
+=item * L</sequencing_report>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("library_report", ["library_id", "sequencing_report"]);
 
 =head1 RELATIONS
 
@@ -104,24 +120,24 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
-=head2 sample
+=head2 library
 
 Type: belongs_to
 
-Related object: L<Soong::Schema::Result::Sample>
+Related object: L<Soong::Schema::Result::Library>
 
 =cut
 
 __PACKAGE__->belongs_to(
-  "sample",
-  "Soong::Schema::Result::Sample",
-  { sample_id => "sample_id" },
-  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
+  "library",
+  "Soong::Schema::Result::Library",
+  { library_id => "library_id" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "RESTRICT" },
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2017-06-12 15:30:06
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:dc78Vc/a9sJbn3Lgd8+qRQ
+# Created by DBIx::Class::Schema::Loader v0.07042 @ 2017-06-16 10:32:54
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:q0Y0h5yYW2+o3p8DQL+c0g
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration

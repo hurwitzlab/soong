@@ -29,7 +29,7 @@ CREATE TABLE patient_attr (
   patient_attr_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   patient_id int(10) unsigned NOT NULL,
   patient_attr_type_id int(10) unsigned NOT NULL,
-  value varchar(100) NOT NULL,
+  value text NOT NULL,
   PRIMARY KEY (patient_attr_id),
   KEY (patient_id),
   KEY (patient_attr_type_id),
@@ -42,11 +42,11 @@ CREATE TABLE sample (
   sample_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   project_id int(10) unsigned NOT NULL,
   patient_id int(10) unsigned NOT NULL DEFAULT 1,
-  sample_name varchar(100) NOT NULL,
-  sample_num varchar(100) DEFAULT NULL,
+  sample_acc varchar(100) NOT NULL,
+  sample_num int unsigned,
   sample_collection_date date,
   PRIMARY KEY (sample_id),
-  UNIQUE (project_id,sample_name),
+  UNIQUE (project_id,sample_acc),
   KEY (project_id),
   FOREIGN KEY (project_id) REFERENCES project (project_id) ON DELETE CASCADE,
   FOREIGN KEY (patient_id) REFERENCES patient (patient_id) ON DELETE CASCADE
@@ -65,7 +65,7 @@ CREATE TABLE sample_attr (
   sample_attr_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   sample_id int(10) unsigned NOT NULL,
   sample_attr_type_id int(10) unsigned NOT NULL,
-  value varchar(100) NOT NULL,
+  value text NOT NULL,
   PRIMARY KEY (sample_attr_id),
   KEY (sample_id),
   KEY (sample_attr_type_id),
@@ -86,12 +86,11 @@ CREATE TABLE library (
   library_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   sample_id int(10) unsigned NOT NULL,
   seq_type_id int(10) unsigned NOT NULL DEFAULT '1',
-  library_name varchar(100) NOT NULL,
-  sequencing_barcode varchar(100) DEFAULT NULL,
+  barcode varchar(100) DEFAULT NULL,
   PRIMARY KEY (library_id),
   KEY (sample_id),
   KEY (seq_type_id),
-  UNIQUE (sample_id, library_name),
+  UNIQUE (sample_id, barcode),
   FOREIGN KEY (sample_id) REFERENCES sample (sample_id) ON DELETE CASCADE,
   FOREIGN KEY (seq_type_id) REFERENCES seq_type (seq_type_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -104,7 +103,7 @@ CREATE TABLE seq_run (
   run_on_sequencer varchar(255) DEFAULT NULL,
   PRIMARY KEY (seq_run_id),
   KEY library_id (library_id),
-  UNIQUE (sequencing_report),
+  UNIQUE KEY `library_report` (library_id, sequencing_report),
   FOREIGN KEY (library_id) REFERENCES library (library_id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -120,7 +119,7 @@ DROP TABLE IF EXISTS bam_file;
 CREATE TABLE bam_file (
   bam_file_id int(10) unsigned NOT NULL AUTO_INCREMENT,
   seq_run_id int(10) unsigned NOT NULL,
-  publication_id int(10) unsigned NOT NULL,
+  publication_id int(10) unsigned NOT NULL DEFAULT 1,
   filename varchar(255) NOT NULL,
   qc_command text,
   num_total_reads int(10) unsigned DEFAULT NULL,

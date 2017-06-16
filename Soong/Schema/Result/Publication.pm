@@ -65,6 +65,20 @@ __PACKAGE__->add_columns(
 
 __PACKAGE__->set_primary_key("publication_id");
 
+=head1 UNIQUE CONSTRAINTS
+
+=head2 C<publication_name>
+
+=over 4
+
+=item * L</publication_name>
+
+=back
+
+=cut
+
+__PACKAGE__->add_unique_constraint("publication_name", ["publication_name"]);
+
 =head1 RELATIONS
 
 =head2 bam_files
@@ -83,8 +97,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2017-06-12 14:50:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:iDXeiYdJj+DugIuGc8hP3A
+# Created by DBIx::Class::Schema::Loader v0.07042 @ 2017-06-15 10:24:08
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:b4w+xkuGjmz1KAluzQ8wYw
 
 
 # You can replace this text with custom code or comments, and it will be preserved on regeneration
